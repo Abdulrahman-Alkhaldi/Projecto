@@ -31,7 +31,7 @@ class UserSettings(models.Model):
     theme = models.CharField(max_length=5, choices=THEME_CHOICES, default='dark')
     notifications = models.BooleanField(default=True)
     # FK's
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name='user_settings')
     
     class Meta:
         verbose_name_plural = "UserSettings"
@@ -79,7 +79,7 @@ class Message(models.Model):
             raise ValidationError("Message must have content or attachment")
 
     def __str__(self):
-        return f"{self.user} sent a message at {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"sent by {self.user} at {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
     
 class Attachment(models.Model):
     image = models.ImageField(upload_to='attachments/')
