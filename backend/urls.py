@@ -6,9 +6,6 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
 
 
-
-
-
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'usersettings', UserSettingsViewSet, basename='usersettings')
