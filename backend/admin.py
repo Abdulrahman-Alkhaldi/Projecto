@@ -22,6 +22,8 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'email')
     list_filter = ('created_at',)
     inlines = (UserSettingsInline,)
+    list_select_related = ('user_settings',)
+
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(message_count=Count('message'))
@@ -33,7 +35,7 @@ class UserAdmin(admin.ModelAdmin):
     
     @admin.display(description='Notifications', boolean=True)
     def notifications(self, user):
-        return user.usersettings.notifications
+        return user.user_settings.notifications
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
@@ -43,6 +45,7 @@ class UserSettingsAdmin(admin.ModelAdmin):
     search_fields = ('user__first_name', 'user__last_name')
     list_editable = ('theme',)
     actions = ['set_dark_mode']
+    list_select_related = ('user',)
 
     @admin.action(description='Set theme to dark')
     def set_dark_mode(self, request, queryset):
@@ -55,6 +58,7 @@ class ReportedContentAdmin(admin.ModelAdmin):
     list_filter = ('status', 'created_at')
     search_fields = ('reason',)
     list_editable = ('status',)
+    list_select_related = ('reported_by', 'message')
 
 
 class HasReportFilter(admin.SimpleListFilter):
@@ -90,9 +94,11 @@ class MessageAdmin(admin.ModelAdmin):
     list_filter = ('created_at', HasReportFilter)
     search_fields = ('content', 'user__first_name', 'user__last_name')
     inlines = (AttachmentInline,)
+    list_select_related = ('user',)
 
 @admin.register(Attachment)
 class AttachmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'image', 'message')
     list_per_page = 25
     search_fields = ('file_name',)
+    list_select_related = ('message',)

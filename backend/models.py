@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator, MinLengthValidator
+
 
 # Create your models here.
 
@@ -10,13 +12,13 @@ class User(models.Model):
     # password = models.CharField(max_length=50)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    email = models.EmailField(max_length=50)
+    email = models.EmailField(unique=True, validators=[EmailValidator]) # unique email
     created_at = models.DateTimeField(auto_now_add=True)
     
-    def clean(self):
-        # check if email is unique
-        if User.objects.filter(email=self.email).exists():
-            raise ValidationError("Email already exists")
+    # def clean(self):
+    #     # check if email is unique
+    #     if User.objects.filter(email=self.email).exists():
+    #         raise ValidationError("Email already exists")
 
     
     def __str__(self):
@@ -50,7 +52,7 @@ class ReportedContent(models.Model):
         ('resolved', 'Resolved'),
         ('rejected', 'Rejected'),
     ]
-    reason = models.CharField(max_length=255)
+    reason = models.CharField(max_length=255, validators=[MinLengthValidator(10)])
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     # FK's
@@ -58,9 +60,12 @@ class ReportedContent(models.Model):
     message = models.ForeignKey('Message', on_delete=models.CASCADE)
 
     #user can't report same message twice
-    def clean(self):
-        if ReportedContent.objects.filter(message=self.message, reported_by=self.reported_by).exists():
-            raise ValidationError("User already reported this message")
+    # def clean(self):
+    #     if ReportedContent.objects.filter(message=self.message, reported_by=self.reported_by).exists():
+    #         raise ValidationError("User already reported this message")
+
+    class Meta:
+        unique_together = ('reported_by', 'message')
     
     def __str__(self):
         return f"{self.reported_by} reported a message for {self.reason}"
