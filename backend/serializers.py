@@ -13,48 +13,73 @@ v. Related field as nested object -> in message to see who sent the message [DON
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'created_at','user_settings']
-    # hyperlink
+        fields = ['id', 'first_name', 'last_name', 'email', 'created_at', 'user_settings']
     user_settings = serializers.HyperlinkedRelatedField(view_name='usersettings-detail', read_only=True)
 
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        user_settings = UserSettings.objects.create(user=user)
+        user.user_settings = user_settings
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+
+        if not hasattr(instance, 'user_settings'):
+            user_settings = UserSettings.objects.create(user=instance)
+            instance.user_settings = user_settings
+            instance.save()
+
+        return instance
 
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
         fields = ['id', 'theme', 'notifications', 'user']
+        read_only_fields = ['user']
 
+class NestedAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ['id', 'image', 'message']
+        read_only_fields = ['message']
+
+
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ['id', 'image', 'message']
+        
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'content', 'created_at', 'user', 'number_of_reports']
+        fields = ['id', 'content', 'created_at', 'user', 'number_of_reports','attachments']
     # nested object
     user = UserSerializer(read_only=True)
+    attachments = AttachmentSerializer(many=True, read_only=True)
     # computed field
     number_of_reports = serializers.SerializerMethodField(method_name='get_number_of_reports')
     def get_number_of_reports(self, message):
         return message.reportedcontent_set.count()
 
-class ReportedContentSerializer(serializers.ModelSerializer):
+class ReportedContentCreateSerializer(serializers.ModelSerializer):
+    message = serializers.PrimaryKeyRelatedField(queryset=Message.objects.all())
     class Meta:
         model = ReportedContent
         fields = ['id', 'reason', 'status', 'created_at', 'reported_by', 'message']
-    # related field as a string
+        read_only_fields = ['status']
+
+
+class ReportedContentSerializer(serializers.ModelSerializer):
     message = serializers.StringRelatedField()
+    class Meta:
+        model = ReportedContent
+        fields = ['id', 'reason', 'status', 'created_at', 'reported_by', 'message']
+        read_only_fields = ['status', 'reported_by']
+        
 
-# custom serializer
-class CustomAttachmentSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    image = serializers.ImageField()
-    message = serializers.PrimaryKeyRelatedField(queryset=Message.objects.all())
 
-    # creating a new object
-    def create(self, validated_data):
-        return Attachment.objects.create(**validated_data)
-    
-    # updating an existing object 
-    def update(self, instance, validated_data):
-        instance.image = validated_data.get('image', instance.image)
-        instance.message = validated_data.get('message', instance.message)
-        instance.save()
-        return instance
-    

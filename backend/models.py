@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator, MinLengthValidator
-
+from django.conf import settings
 
 # Create your models here.
 
@@ -15,6 +15,8 @@ class User(models.Model):
     email = models.EmailField(unique=True, validators=[EmailValidator]) # unique email
     created_at = models.DateTimeField(auto_now_add=True)
     
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     # def clean(self):
     #     # check if email is unique
     #     if User.objects.filter(email=self.email).exists():
@@ -85,6 +87,9 @@ class Message(models.Model):
 
     def __str__(self):
         return f"sent by {self.user} at {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    class Meta:
+        permissions = [('unsend_message', 'Can unsend message')]
     
 class Attachment(models.Model):
     image = models.ImageField(upload_to='attachments/')
