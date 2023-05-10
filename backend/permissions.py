@@ -25,4 +25,9 @@ class UnsendMessagePermission(BasePermission):
             return True
         if request.method == 'DELETE':
             return request.user.groups.filter(name='moderators').exists()
+        if request.method == 'POST':
+            return True
+        if request.method == 'PATCH':
+            return True
+        
         return False

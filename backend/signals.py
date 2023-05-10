@@ -8,7 +8,7 @@ def create_user(sender, **kwargs):
     if kwargs['created']:
         user = kwargs['instance']
 
-        user = User.objects.create(user = user, first_name = user.first_name, last_name = user.last_name, email = user.email)
+        user = User.objects.create(user = user)
         UserSettings.objects.create(user = user, theme = 'dark', notifications = True)
 
 

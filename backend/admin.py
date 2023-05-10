@@ -10,42 +10,41 @@ from .models import *
 
 # register all of my models
 
-class UserSettingsInline(admin.TabularInline):
-    model = UserSettings
-    can_delete = False
-    verbose_name_plural = 'User Settings'
+# class UserSettingsInline(admin.TabularInline):
+#     model = UserSettings
+#     can_delete = False
+#     verbose_name_plural = 'User Settings'
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'email', 'message_count', 'notifications', 'created_at')
-    list_per_page = 25
-    search_fields = ('first_name', 'last_name', 'email')
-    list_filter = ('created_at',)
-    inlines = (UserSettingsInline,)
-    list_select_related = ('user_settings',)
+# @admin.register(User)
+# class UserAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'message_count', 'notifications', 'created_at')
+#     list_per_page = 25
+#     list_filter = ('created_at',)
+#     inlines = (UserSettingsInline,)
+#     list_select_related = ('user_settings',)
 
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).annotate(message_count=Count('message'))
+#     def get_queryset(self, request):
+#         return super().get_queryset(request).annotate(message_count=Count('message'))
 
-    @admin.display(description='Message Count')
-    def message_count(self, user):
-        url = reverse('admin:backend_message_changelist')
-        return format_html('<a href="{}?user__id={}">{}</a>', url, user.id, user.message_count)
+#     @admin.display(description='Message Count')
+#     def message_count(self, user):
+#         url = reverse('admin:backend_message_changelist')
+#         return format_html('<a href="{}?user__id={}">{}</a>', url, user.id, user.message_count)
     
-    @admin.display(description='Notifications', boolean=True)
-    def notifications(self, user):
-        return user.user_settings.notifications
+#     @admin.display(description='Notifications', boolean=True)
+#     def notifications(self, user):
+#         return user.user_settings.notifications
 
 @admin.register(UserSettings)
 class UserSettingsAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'theme', 'notifications')
     list_per_page = 25
-    list_filter = ('theme', 'notifications')
+    # list_filter = ('theme', 'notifications')
     search_fields = ('user__first_name', 'user__last_name')
     list_editable = ('theme',)
     actions = ['set_dark_mode']
-    list_select_related = ('user',)
+    list_select_related = ('user__user',)
 
     @admin.action(description='Set theme to dark')
     def set_dark_mode(self, request, queryset):
@@ -56,9 +55,8 @@ class ReportedContentAdmin(admin.ModelAdmin):
     list_display = ('id', 'reason', 'status', 'reported_by', 'message', 'created_at')
     list_per_page = 25
     list_filter = ('status', 'created_at')
-    search_fields = ('reason',)
     list_editable = ('status',)
-    list_select_related = ('reported_by', 'message')
+    list_select_related = ('reported_by', 'message__user')
 
 
 class HasReportFilter(admin.SimpleListFilter):
@@ -92,7 +90,7 @@ class MessageAdmin(admin.ModelAdmin):
     list_display = ('id', 'content', 'user', 'created_at')
     list_per_page = 25
     list_filter = ('created_at', HasReportFilter)
-    search_fields = ('content', 'user__first_name', 'user__last_name')
+    search_fields = ('content', 'user__user__first_name', 'user__user__last_name')
     inlines = (AttachmentInline,)
     list_select_related = ('user',)
 
@@ -100,5 +98,4 @@ class MessageAdmin(admin.ModelAdmin):
 class AttachmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'image', 'message')
     list_per_page = 25
-    search_fields = ('file_name',)
     list_select_related = ('message',)

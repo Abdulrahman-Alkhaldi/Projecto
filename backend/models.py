@@ -10,9 +10,9 @@ class User(models.Model):
     # we'll use authentication from django later
     # username = models.CharField(max_length=50)
     # password = models.CharField(max_length=50)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField(unique=True, validators=[EmailValidator]) # unique email
+    # first_name = models.CharField(max_length=50)
+    # last_name = models.CharField(max_length=50)
+    # email = models.EmailField(unique=True, validators=[EmailValidator]) # unique email
     created_at = models.DateTimeField(auto_now_add=True)
     
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -24,7 +24,7 @@ class User(models.Model):
 
     
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
 class UserSettings(models.Model):
     # add theme theme choices 
@@ -42,11 +42,11 @@ class UserSettings(models.Model):
 
     def clean(self):
         # check if user is unique
-        if UserSettings.objects.filter(user=self.user).exists():
+        if UserSettings.objects.filter(user=self.user.user).exists():
             raise ValidationError("User already has settings")
 
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name}'s settings"
+        return f"{self.user.user.first_name} {self.user.user.last_name}'s settings"
 
 class ReportedContent(models.Model):
     STATUS_CHOICES = [
