@@ -31,5 +31,5 @@ urlpatterns = [
     path('report_list/', report_list, name='display report_list'),
     # user settings
     path('user_settings/', user_settings, name='display user_settings')
-]
+]   
 

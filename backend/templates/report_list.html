@@ -28,7 +28,7 @@
                     <td>{{ report.id }}</td>
                     <td>{{ report.reason }}</td>
                     <td>{{ report.get_status_display }}</td>
-                    <td>{{ report.reported_by.first_name }} {{ report.reported_by.last_name }}</td>
+                    <td>{{ report.reported_by.user.first_name }} {{ report.reported_by.user.last_name }}</td>
                     <td>{{ report.message.content }}</td>
                     <td>{{ report.created_at }}</td>
                 </tr>

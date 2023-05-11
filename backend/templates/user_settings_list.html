@@ -24,7 +24,7 @@
                 {% for setting in user_settings %}
                 <tr>
                     <td>{{ setting.id }}</td>
-                    <td>{{ setting.user.first_name }} {{ setting.user.last_name }}</td>
+                    <td>{{ setting.user.user.first_name }} {{ setting.user.user.last_name }}</td>
                     <td>{{ setting.theme }}</td>
                     <td>{{ setting.notifications }}</td>
                 </tr>
